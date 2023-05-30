@@ -1,11 +1,6 @@
-## My Project
+# Amazon EKS Network Policy Demo
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+Github repo to host the Network policy examples.
 
 ## Security
 
