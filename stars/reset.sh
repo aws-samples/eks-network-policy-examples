@@ -1,5 +1,4 @@
 #!/bin/bash
-# Copyright (c) 2016 Tigera, Inc. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +20,8 @@ kubectl delete ns stars
 kubectl delete ns client
 kubectl delete ns management-ui
 
-policy delete frontend-policy --namespace=stars
-policy delete backend-policy --namespace=stars
-policy delete allow-ui --namespace=stars
-policy delete allow-ui --namespace=client
+
+kubectl delete networkpolicy frontend-policy --namespace=stars
+kubectl delete networkpolicy backend-policy --namespace=stars
+kubectl delete networkpolicy allow-ui --namespace=stars
+kubectl delete networkpolicy allow-ui --namespace=client
