@@ -1,4 +1,4 @@
-# Kubernetes Policy Demo
+# Amazon EKS Network Policy Demo (Stars)
 
 The demo reuses Stars policy demo provided by the Project Calico. The demo creates a front-end, back-end, and client service on your Amazon EKS cluster. The demo also creates a management graphical user interface that shows the available ingress and egress paths between each service. We recommend that you complete the demo on a cluster that you don't run production workloads on.
 
