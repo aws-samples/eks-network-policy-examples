@@ -11,14 +11,13 @@ In this walkthrough, we will use Nginx application to demo Network Policy functi
 
 Deploy the sample k8s deployments across two differnet namespaces
 
-```bash
-kubectl apply -f manifests/app-client.yaml
-kubectl apply -f manifests/another-client.yaml
+```shell
+kubectl apply -f manifests/
 ```
 
 Verify the deployments
 
-```bash
+```shell
 kubectl get all
 ```
 ```
@@ -42,7 +41,7 @@ replicaset.apps/client-two-79c7489d5b                1         1         1      
 replicaset.apps/demo-app-c5cf4d4b8                   1         1         1       21m
 ```
 
-```bash
+```shell
 kubectl get all -n another-ns
 ```
 ```                                                                          
@@ -64,7 +63,7 @@ replicaset.apps/another-client-two-78789c86b8   1         1         1       40m
 By default pods can communicate other pods seamlessely in a k8s cluster. Lets test the connectivity to `demo-app` application from with in the namespace and across namespaces.
 
 Export the pod names
-```bash
+```shell
 export DEMO_APP_POD=$(kubectl get pod --selector app=demo-app -o jsonpath='{.items[0].metadata.name}')
 export CLIENT_ONE_POD=$(kubectl get pod --selector app=client-one -o jsonpath='{.items[0].metadata.name}')
 export CLIENT_TWO_POD=$(kubectl get pod --selector app=client-two -o jsonpath='{.items[0].metadata.name}')
@@ -74,11 +73,11 @@ export XNS_CLIENT_TWO_POD=$(kubectl get pod -n another-ns --selector app=another
 
 Test the connectivity from `client pods` with in & across the namespaces
 
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 10 demo-svc.default.svc.cluster.local
-kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 10 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 10 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 10 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 
 You would see below response for each command, indicating successful API call
@@ -109,85 +108,85 @@ Lets start applying the k8s Network policies to control traffic flow between dif
 
 ### Block all traffic to Demo app
 
-```bash
+```shell
 kubectl apply -f policies/01-deny-all-ingress.yaml
 networkpolicy.networking.k8s.io/demo-app-deny-all created
 ```
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 All the above calls would timeout 
 ```
-curl: (28) Connection timed out after 5001 milliseconds
+curl: (28) Connection timed out after 3001 milliseconds
 command terminated with exit code 28
 ```
 
 ### Allow traffic from Same namespace (default)
-```bash
+```shell
 kubectl apply -f policies/02-allow-ingress-from-samens.yaml
 networkpolicy.networking.k8s.io/demo-app-allow-samens created
 ```
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 First two commands succeed, as the network policy is allowing the ingress traffic only with in the `default` namespace.
 
 #### Clean up
-```bash
+```shell
 kubectl delete -f policies/02-allow-ingress-from-samens.yaml
 networkpolicy.networking.k8s.io "demo-app-allow-samens" deleted
 ```
 
 ### Allow traffic from `client-one` app in same namespace
-```bash
+```shell
 kubectl apply -f policies/03-allow-ingress-from-samens-client-one.yaml
 networkpolicy.networking.k8s.io/demo-app-allow-samens-client-one created
 ```
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $CLIENT_TWO_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 Only the first command works, and the other three timeout given the network policy allow access only from `client-one` pod in `default` namespace.
 
 ### Allow traffic from `another-ns` namespace
-```bash
+```shell
 kubectl apply -f policies/04-allow-ingress-from-xns.yaml
 networkpolicy.networking.k8s.io/demo-app-allow-another-ns created
 ```
-```bash
-kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 Now, traffic is allowed from all pods in the `another-ns` namespace.
 
 #### Clean up
-```bash
+```shell
 kubectl delete -f policies/04-allow-ingress-from-xns.yaml
 networkpolicy.networking.k8s.io "demo-app-allow-another-ns" deleted
 ```
 
 ### Allow traffic from `another-client-one` in `another-ns` namespace
-```bash
+```shell
 kubectl apply -f policies/05-allow-ingress-from-xns-client-one.yaml
 networkpolicy.networking.k8s.io/demo-app-allow-another-client created
 ```
-```bash
-kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
-kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $XNS_CLIENT_ONE_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
+kubectl exec -it $XNS_CLIENT_TWO_POD -n another-ns -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 Now, traffic is allowed from only `another-client-one` pod in the `another-ns` namespace, and not from `another-client-two` pod.
 
 ## Ingress Cleanup
 
-```bash
+```shell
 kubectl delete -f policies/01-deny-all-ingress.yaml
 kubectl delete -f policies/02-allow-ingress-from-samens.yaml
 kubectl delete -f policies/03-allow-ingress-from-samens-client-one.yaml
@@ -198,43 +197,43 @@ kubectl delete -f policies/05-allow-ingress-from-xns-client-one.yaml
 ## Egress Example Walkthrough
 
 ### Deny all egress from `client-one` pod
-```bash
+```shell
 kubectl apply -f policies/06-deny-egress-from-client-one.yaml
 networkpolicy.networking.k8s.io/client-one-deny-egress created
 ```
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 ```
-curl: (28) Resolving timed out after 5000 milliseconds
+curl: (28) Resolving timed out after 3000 milliseconds
 command terminated with exit code 28
 ```
 It fails with timeout error, as `client-one` pod is not able to lookup/resolve the `demo-svc` service ip address.
 
 ### Allow egress to a specific `port(53)` on `coredns` from `client-one` pod 
-```bash
+```shell
 kubectl apply -f policies/07-allow-egress-to-coredns.yaml
 networkpolicy.networking.k8s.io/client-one-allow-egress-coredns created
 ```
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 5 -v demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 -v demo-svc.default.svc.cluster.local
 ```
 ```
 *   Trying 172.20.20.101:80...
-* Connection timed out after 5000 milliseconds
+* Connection timed out after 3000 milliseconds
 * Closing connection 0
-curl: (28) Connection timed out after 5000 milliseconds
+curl: (28) Connection timed out after 3000 milliseconds
 command terminated with exit code 28
 ```
 Now, `client-one` is able to communicate with `coredns` to resolve the service ip of `demo-svc`, but failed to connect to `demo-app` due to missing egress rule.
 
 ### Allow egress to multiple apps and ports from `client-one` pod
-```bash
+```shell
 kubectl apply -f policies/08-allow-egress-to-demo-app.yaml
 networkpolicy.networking.k8s.io/client-one-allow-egress-demo-app created
 ```
-```bash
-kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 5 demo-svc.default.svc.cluster.local
+```shell
+kubectl exec -it $CLIENT_ONE_POD -- curl --max-time 3 demo-svc.default.svc.cluster.local
 ```
 This time, `client-one` is able to resolve the ip address and connect to the `demo-app` on port `80` successfully.
 

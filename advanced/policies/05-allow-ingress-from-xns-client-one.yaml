@@ -10,7 +10,7 @@ spec:
   - from:
       - podSelector:
           matchLabels:
-            app: another-demo-client
+            app: another-client-one
         namespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: another-ns
