@@ -1,40 +1,30 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
+  labels:
+    app: another-client-one
   name: another-client-one
   namespace: another-ns
 spec:
-  selector:
-    matchLabels:
-      app: another-client-one
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: another-client-one
-    spec:
-      containers:
-      - name: another-client-one
-        image: public.ecr.aws/docker/library/nginx:stable
-        imagePullPolicy: IfNotPresent
+  containers:
+  - image: curlimages/curl:latest
+    name: client-one
+    command:
+    - sleep
+    - "3600"
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
+  labels:
+    app: another-client-two
   name: another-client-two
   namespace: another-ns
 spec:
-  selector:
-    matchLabels:
-      app: another-client-two
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: another-client-two
-    spec:
-      containers:
-      - name: another-client-two
-        image: public.ecr.aws/docker/library/nginx:stable
-        imagePullPolicy: IfNotPresent
+  containers:
+  - image: curlimages/curl:latest
+    name: client-two
+    command:
+    - sleep
+    - "3600"
