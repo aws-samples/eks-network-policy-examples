@@ -94,8 +94,8 @@ kubectl apply -f policies/01-deny-all-ingress.yaml
 ```shell
 kubectl exec -it client-one -- curl --max-time 3 demo-app
 kubectl exec -it client-two -- curl --max-time 3 demo-app
-kubectl exec -it another-client-one -n another-ns -- curl --max-time 3 demo-app
-kubectl exec -it another-client-two -n another-ns -- curl --max-time 3 demo-app
+kubectl exec -it another-client-one -n another-ns -- curl --max-time 3 demo-app.default
+kubectl exec -it another-client-two -n another-ns -- curl --max-time 3 demo-app.default
 ```
 All the above calls would timeout 
 ```
@@ -110,10 +110,10 @@ kubectl apply -f policies/02-allow-ingress-from-samens.yaml
 ```shell
 kubectl exec -it client-one -- curl --max-time 3 demo-app
 kubectl exec -it client-two -- curl --max-time 3 demo-app
-kubectl exec -it another-client-one -n another-ns -- curl --max-time 3 demo-app
-kubectl exec -it another-client-two -n another-ns -- curl --max-time 3 demo-app
+kubectl exec -it another-client-one -n another-ns -- curl --max-time 3 demo-app.default
+kubectl exec -it another-client-two -n another-ns -- curl --max-time 3 demo-app.default
 ```
-First two commands succeed, as the network policy is allowing the ingress traffic only with in the `default` namespace.
+First two commands will succeed, as the network policy is allowing the ingress traffic only with in the `default` namespace.
 
 #### Clean up
 ```shell
@@ -207,6 +207,16 @@ kubectl exec -it client-one -- curl --max-time 3 demo-app
 ```
 This time, `client-one` is able to resolve the ip address and connect to the `demo-app` on port `80` successfully.
 
+<!--
+### Allow egress to an IP CIDR and ports from `client-one` pod
+```shell
+kubectl apply -f policies/09-allow-egress-to-ip.yaml
+```
+```shell
+kubectl exec -it client-one -- curl --max-time 3 192.168.161.234
+```
+This time, `client-one` is able to resolve the ip address and connect to the `demo-app` on port `80` successfully.
+-->
 YaY!!
 
 ## Cleanup

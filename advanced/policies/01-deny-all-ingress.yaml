@@ -6,4 +6,5 @@ spec:
   podSelector:
     matchLabels:
       app: demo-app
-  ingress: []
+  policyTypes:
+  - Ingress
