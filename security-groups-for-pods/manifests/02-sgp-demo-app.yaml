@@ -53,7 +53,7 @@ spec:
         secretKeyRef:
           name: db-creds
           key: dbhost
-    image: 257960400895.dkr.ecr.us-west-2.amazonaws.com/nginx-psql:latest
+    image: sriram430/nginx-psql-client:latest
     ports:
     - containerPort: 80
     volumeMounts:
